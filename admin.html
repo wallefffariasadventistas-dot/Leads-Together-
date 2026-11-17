@@ -49,6 +49,9 @@
   [hidden]{display:none!important}
   @media(max-width:560px){.filters{grid-template-columns:1fr}}
 </style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -72,7 +75,9 @@
      <div class="bar">
        <div><h1>Inscritos</h1><p class="sub" id="total" style="margin:0">Carregando…</p></div>
        <div class="actions">
-         <button id="csv" type="button">Baixar CSV</button>
+         <button id="xlsx" type="button">Excel</button>
+         <button id="pdf" type="button">PDF</button>
+         <button id="csv" type="button">CSV</button>
          <button id="logout" type="button">Sair</button>
        </div>
      </div>
@@ -88,6 +93,7 @@
        </table>
        <div class="empty" id="empty" hidden>Nenhum inscrito encontrado.</div>
      </div>
+     <p class="sub" style="margin:10px 0 0;font-size:.85rem">Os downloads (Excel, PDF e CSV) respeitam a busca e o filtro de missão aplicados na tela.</p>
      <p class="err" id="panelErr" role="alert"></p>
    </section>
 
@@ -126,11 +132,15 @@
   const fmt = d => d ? d.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "";
   const toDate = l => l.criadoEm?.toDate?.() ?? (l.data ? new Date(l.data) : null);
 
-  function render(){
+  function filtered(){
     const q = $("#q").value.trim().toLowerCase();
-    const list = leads.filter(l =>
+    return leads.filter(l =>
       (!missaoSel || key(l.missao)===missaoSel) &&
       (!q || [l.nome,l.telefone,l.campo,l.missao].join(" ").toLowerCase().includes(q)));
+  }
+
+  function render(){
+    const list = filtered();
     $("#rows").innerHTML = list.map(l => {
       const k = key(l.missao), tel = String(l.telefone||"").replace(/\D/g,"");
       return `<tr><td>${esc(fmt(toDate(l)))}</td><td>${esc(l.nome)}</td>
@@ -158,13 +168,47 @@
   $("#fMissao").addEventListener("change", e => { missaoSel = e.target.value; renderStats(); render(); });
   $("#q").addEventListener("input", render);
 
+  const HEAD = ["Data","Nome","Telefone","Campo","Idade","Missão"];
+  const toRows = list => list.map(l => [fmt(toDate(l)),l.nome,l.telefone,l.campo,l.idade,l.missao]);
+  const stamp = () => new Date().toISOString().slice(0,10);
+  function noData(){ if(!filtered().length){ $("#panelErr").textContent="Não há inscritos para baixar."; return true; } $("#panelErr").textContent=""; return false; }
+
   $("#csv").addEventListener("click", () => {
-    const head = ["Data","Nome","Telefone","Campo","Idade","Missão"];
+    if(noData()) return;
     const q = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
-    const rows = leads.map(l => [fmt(toDate(l)),l.nome,l.telefone,l.campo,l.idade,l.missao].map(q).join(","));
-    const blob = new Blob(["﻿"+[head.map(q).join(","),...rows].join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const rows = toRows(filtered()).map(r => r.map(q).join(","));
+    const blob = new Blob(["\uFEFF"+[HEAD.map(q).join(","),...rows].join("\r\n")],{type:"text/csv;charset=utf-8"});
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "inscritos-together.csv"; a.click(); URL.revokeObjectURL(a.href);
+    a.download = `inscritos-together-${stamp()}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  $("#xlsx").addEventListener("click", () => {
+    if(noData()) return;
+    if(!window.XLSX){ $("#panelErr").textContent="Biblioteca do Excel não carregou. Verifique a internet e recarregue."; return; }
+    const ws = XLSX.utils.aoa_to_sheet([HEAD, ...toRows(filtered())]);
+    ws["!cols"] = [{wch:17},{wch:30},{wch:17},{wch:18},{wch:7},{wch:26}];
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inscritos");
+    XLSX.writeFile(wb, `inscritos-together-${stamp()}.xlsx`);
+  });
+
+  $("#pdf").addEventListener("click", () => {
+    if(noData()) return;
+    if(!window.jspdf){ $("#panelErr").textContent="Biblioteca do PDF não carregou. Verifique a internet e recarregue."; return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+    const list = filtered();
+    doc.setFont("helvetica","bold"); doc.setFontSize(16);
+    doc.text("Together – Feel the Mission Nordeste", 40, 40);
+    doc.setFont("helvetica","normal"); doc.setFontSize(10);
+    const filtro = [missaoSel && `Missão: ${missaoSel}`, $("#q").value.trim() && `Busca: ${$("#q").value.trim()}`].filter(Boolean).join(" · ");
+    doc.text(`Lista de inscritos · ${list.length} registro${list.length===1?"":"s"} · gerado em ${new Date().toLocaleString("pt-BR")}${filtro? " · "+filtro : ""}`, 40, 58);
+    doc.autoTable({
+      head:[HEAD], body: toRows(list), startY: 72,
+      styles:{fontSize:9, cellPadding:5}, headStyles:{fillColor:[201,80,43]},
+      alternateRowStyles:{fillColor:[255,250,240]},
+      didDrawPage: d => { doc.setFontSize(8); doc.text(`Página ${doc.internal.getNumberOfPages()}`, doc.internal.pageSize.getWidth()-70, doc.internal.pageSize.getHeight()-20); }
+    });
+    doc.save(`inscritos-together-${stamp()}.pdf`);
   });
 
   function startListening(){
