@@ -47,11 +47,13 @@
   .sub{margin:0 0 20px; color:var(--muted); font-size:.95rem}
   .step{display:none} .step.active{display:block}
   label.field{display:block; margin-bottom:16px; font-family:'Oswald',sans-serif; font-weight:700; font-size:.95rem; text-transform:uppercase; letter-spacing:.8px}
-  input[type=text],input[type=tel],input[type=number]{
+  input[type=text],input[type=tel],input[type=number],select{
     width:100%; margin-top:6px; padding:13px 14px; font-size:1rem; border:3px solid var(--blue);
     border-radius:var(--radius) 10px var(--radius) 12px; outline:none; transition:.2s; font-family:'Rubik',sans-serif; background:#fff; color:var(--ink);
   }
-  input:focus{border-color:var(--terra); box-shadow:3px 3px 0 var(--yellow)}
+  select{appearance:none; -webkit-appearance:none; cursor:pointer; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%230287c5' stroke-width='3' fill='none'/%3E%3C/svg%3E") no-repeat right 14px center}
+  #campoOutro{margin-top:10px}
+  input:focus,select:focus{border-color:var(--terra); box-shadow:3px 3px 0 var(--yellow)}
   .invalid{border-color:var(--error)!important}
   .err{color:var(--error); font-family:'Rubik',sans-serif; text-transform:none; letter-spacing:0; font-size:.8rem; font-weight:500; min-height:1em; margin-top:4px; display:block}
   .missions{display:grid; gap:12px; margin-bottom:12px}
@@ -116,7 +118,17 @@
         <span class="err" data-for="telefone"></span>
       </label>
       <label class="field">Campo
-        <input type="text" id="campo" name="campo" placeholder="Seu campo / associação">
+        <select id="campo" name="campo">
+          <option value="">Selecione seu campo</option>
+          <option value="ACe">ACe</option>
+          <option value="APec">APec</option>
+          <option value="ALP">ALP</option>
+          <option value="MPi">MPi</option>
+          <option value="MRP">MRP</option>
+          <option value="MisAL">MisAL</option>
+          <option value="OUTRO">Outro</option>
+        </select>
+        <input type="text" id="campoOutro" name="campoOutro" placeholder="Digite o seu campo" hidden>
         <span class="err" data-for="campo"></span>
       </label>
       <label class="field">Idade
@@ -185,11 +197,14 @@ function validateStep1(){
   let ok = true;
   const nome = form.nome.value.trim();
   const tel = form.telefone.value.replace(/\D/g,"");
-  const campo = form.campo.value.trim();
+  const campoSel = form.campo.value;
+  const campoOutro = form.campoOutro.value.trim();
   const idade = parseInt(form.idade.value,10);
   setErr("nome", nome.split(/\s+/).length < 2 ? (ok=false,"Informe nome e sobrenome") : "");
   setErr("telefone", (tel.length<10||tel.length>11) ? (ok=false,"Telefone inválido (com DDD)") : "");
-  setErr("campo", campo.length<2 ? (ok=false,"Informe seu campo") : "");
+  setErr("campo", !campoSel ? (ok=false,"Selecione seu campo") : "");
+  form.campoOutro.classList.toggle("invalid", campoSel==="OUTRO" && !campoOutro);
+  if(campoSel==="OUTRO" && !campoOutro){ ok=false; setErr("campo","Digite o nome do seu campo"); form.campoOutro.classList.add("invalid"); }
   setErr("idade", (!idade||idade<5||idade>99) ? (ok=false,"Idade inválida") : "");
   return ok;
 }
@@ -213,7 +228,14 @@ form.telefone.addEventListener("input", e=>{
   e.target.value = v;
 });
 
-// campo "Outro"
+// campo (associação/missão): "Outro" mostra caixa de texto
+form.campo.addEventListener("change",()=>{
+  const o = form.campo.value==="OUTRO";
+  form.campoOutro.hidden = !o;
+  if(o) form.campoOutro.focus();
+  setErr("campo","");
+});
+// missão "Outro"
 form.querySelectorAll('input[name="missao"]').forEach(r=>{
   r.addEventListener("change",()=>{
     const isOutro = form.missao.value==="OUTRO";
@@ -235,7 +257,7 @@ form.addEventListener("submit", async e=>{
   const lead = {
     nome: form.nome.value.trim(),
     telefone: form.telefone.value,
-    campo: form.campo.value.trim(),
+    campo: form.campo.value==='OUTRO' ? `OUTRO: ${form.campoOutro.value.trim()}` : form.campo.value,
     idade: Number(form.idade.value),
     missao: missao==="OUTRO" ? `OUTRO: ${outro}` : missao,
     data: new Date().toISOString()
