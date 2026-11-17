@@ -177,12 +177,6 @@
 </div>
 
 <script>
-/* ===== CONFIGURAÇÃO =====
-   Cole aqui a URL que vai receber os leads (Google Apps Script, Make, Zapier, n8n, etc.).
-   Os dados são enviados por POST em JSON. Se ficar vazio, os leads ficam apenas no
-   navegador (localStorage) – útil só para testes. */
-const ENDPOINT = "";
-
 const $ = s => document.querySelector(s);
 const form = $("#form");
 
@@ -265,17 +259,33 @@ form.addEventListener("submit", async e=>{
 
   const btn = $("#send"); btn.disabled = true; btn.textContent = "Enviando...";
   try{
-    if(ENDPOINT){
-      await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(lead)});
-    }
-    const saved = JSON.parse(localStorage.getItem("leads")||"[]");
-    saved.push(lead); localStorage.setItem("leads",JSON.stringify(saved));
+    await window.saveLead(lead);
     form.hidden = true; $(".steps").hidden = true; $("#done").hidden = false;
   }catch(err){
     btn.disabled = false; btn.textContent = "Enviar";
     setErr("missao","Erro ao enviar. Tente novamente.");
   }
 });
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcwMCdmMM17rqie9O0KXYioK_MG02i1Dk",
+    authDomain: "leadstogether-a0d0a.firebaseapp.com",
+    projectId: "leadstogether-a0d0a",
+    storageBucket: "leadstogether-a0d0a.firebasestorage.app",
+    messagingSenderId: "365712650025",
+    appId: "1:365712650025:web:7513a02c8c8cd840cc1138",
+    measurementId: "G-ZF414P0C0F"
+  };
+  const db = getFirestore(initializeApp(firebaseConfig));
+
+  // Salva o lead na coleção "leads" do Firestore
+  window.saveLead = async (lead) => {
+    await addDoc(collection(db, "leads"), { ...lead, criadoEm: serverTimestamp() });
+  };
 </script>
 </body>
 </html>
