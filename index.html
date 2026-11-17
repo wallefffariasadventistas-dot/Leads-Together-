@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leads Together – Escolha sua Missão</title>
+<style>
+  :root{
+    --bg:#0f2a47; --bg2:#1b4d7a; --card:#ffffff; --text:#1c2733;
+    --muted:#6b7a89; --primary:#e8a317; --primary-d:#c98a0a; --error:#d64545;
+    --border:#d8e0e8; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px 16px; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(160deg,var(--bg),var(--bg2)); color:var(--text);
+  }
+  .card{background:var(--card); width:100%; max-width:480px; border-radius:20px; padding:28px 24px; box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  h1{margin:0 0 4px; font-size:1.5rem}
+  .sub{margin:0 0 20px; color:var(--muted); font-size:.95rem}
+  .steps{display:flex; gap:8px; margin-bottom:22px}
+  .steps span{flex:1; height:6px; border-radius:3px; background:var(--border); transition:.3s}
+  .steps span.on{background:var(--primary)}
+  .step{display:none} .step.active{display:block}
+  label.field{display:block; margin-bottom:16px; font-weight:600; font-size:.9rem}
+  input[type=text],input[type=tel],input[type=number]{
+    width:100%; margin-top:6px; padding:13px 14px; font-size:1rem; border:1.5px solid var(--border);
+    border-radius:var(--radius); outline:none; transition:.2s; font-family:inherit;
+  }
+  input:focus{border-color:var(--primary); box-shadow:0 0 0 3px rgba(232,163,23,.2)}
+  .invalid{border-color:var(--error)!important}
+  .err{color:var(--error); font-size:.8rem; font-weight:400; min-height:1em; margin-top:4px; display:block}
+  .missions{display:grid; gap:10px; margin-bottom:12px}
+  .mission{position:relative}
+  .mission input{position:absolute; opacity:0}
+  .mission div{
+    padding:14px 16px; border:1.5px solid var(--border); border-radius:var(--radius);
+    font-weight:600; cursor:pointer; transition:.2s; display:flex; align-items:center; gap:10px;
+  }
+  .mission div::before{content:""; width:18px; height:18px; border-radius:50%; border:2px solid var(--border); flex:none; transition:.2s}
+  .mission input:checked + div{border-color:var(--primary); background:#fff8e8}
+  .mission input:checked + div::before{border-color:var(--primary); background:var(--primary); box-shadow:inset 0 0 0 3px #fff8e8}
+  .mission input:focus-visible + div{box-shadow:0 0 0 3px rgba(232,163,23,.3)}
+  #outroBox{display:none; margin-bottom:12px} #outroBox.show{display:block}
+  .actions{display:flex; gap:10px; margin-top:8px}
+  button{
+    flex:1; padding:14px; font-size:1rem; font-weight:700; border:0; border-radius:var(--radius);
+    cursor:pointer; font-family:inherit; transition:.2s;
+  }
+  .btn-primary{background:var(--primary); color:#1c1400} .btn-primary:hover{background:var(--primary-d)}
+  .btn-ghost{background:#eef2f6; color:var(--text); flex:0 0 35%}
+  button:disabled{opacity:.6; cursor:wait}
+  .done{text-align:center; padding:20px 0}
+  .done .ok{font-size:3rem}
+  .hp{position:absolute; left:-9999px}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="steps" aria-hidden="true"><span class="on" id="bar1"></span><span id="bar2"></span></div>
+
+  <form id="form" novalidate>
+    <!-- FASE 1 -->
+    <section class="step active" id="step1">
+      <h1>Vamos nos conhecer! 👋</h1>
+      <p class="sub">Conte um pouco sobre você.</p>
+
+      <label class="field">Nome completo
+        <input type="text" id="nome" name="nome" autocomplete="name" placeholder="Seu nome">
+        <span class="err" data-for="nome"></span>
+      </label>
+      <label class="field">Telefone (WhatsApp)
+        <input type="tel" id="telefone" name="telefone" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000">
+        <span class="err" data-for="telefone"></span>
+      </label>
+      <label class="field">Campo
+        <input type="text" id="campo" name="campo" placeholder="Seu campo / associação">
+        <span class="err" data-for="campo"></span>
+      </label>
+      <label class="field">Idade
+        <input type="number" id="idade" name="idade" inputmode="numeric" min="5" max="99" placeholder="Ex: 18">
+        <span class="err" data-for="idade"></span>
+      </label>
+
+      <div class="actions"><button type="button" class="btn-primary" id="next">Continuar →</button></div>
+    </section>
+
+    <!-- FASE 2 -->
+    <section class="step" id="step2">
+      <h1>Qual missão te chama? 🌍</h1>
+      <p class="sub">Escolha a experiência que você gostaria de viver.</p>
+
+      <div class="missions" role="radiogroup">
+        <label class="mission"><input type="radio" name="missao" value="OYIM"><div>Missão OYIM</div></label>
+        <label class="mission"><input type="radio" name="missao" value="CALEBE"><div>Missão Calebe</div></label>
+        <label class="mission"><input type="radio" name="missao" value="COLPORTAGEM"><div>Missão Colportagem</div></label>
+        <label class="mission"><input type="radio" name="missao" value="SVA"><div>Missão SVA</div></label>
+        <label class="mission"><input type="radio" name="missao" value="OUTRO"><div>Outro</div></label>
+      </div>
+      <div id="outroBox">
+        <input type="text" id="outro" name="outro" placeholder="Qual missão você gostaria de participar?">
+      </div>
+      <span class="err" data-for="missao"></span>
+
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <div class="actions">
+        <button type="button" class="btn-ghost" id="back">← Voltar</button>
+        <button type="submit" class="btn-primary" id="send">Enviar</button>
+      </div>
+    </section>
+  </form>
+
+  <section class="done" id="done" hidden>
+    <div class="ok">🎉</div>
+    <h1>Recebemos seu cadastro!</h1>
+    <p class="sub">Em breve entraremos em contato com você.</p>
+  </section>
+</main>
+
+<script>
+/* ===== CONFIGURAÇÃO =====
+   Cole aqui a URL que vai receber os leads (Google Apps Script, Make, Zapier, n8n, etc.).
+   Os dados são enviados por POST em JSON. Se ficar vazio, os leads ficam apenas no
+   navegador (localStorage) – útil só para testes. */
+const ENDPOINT = "";
+
+const $ = s => document.querySelector(s);
+const form = $("#form");
+
+function setErr(name, msg){
+  const el = document.querySelector(`[data-for="${name}"]`);
+  if(el) el.textContent = msg || "";
+  const input = form.elements[name];
+  if(input && input.classList) input.classList.toggle("invalid", !!msg);
+}
+
+function validateStep1(){
+  let ok = true;
+  const nome = form.nome.value.trim();
+  const tel = form.telefone.value.replace(/\D/g,"");
+  const campo = form.campo.value.trim();
+  const idade = parseInt(form.idade.value,10);
+  setErr("nome", nome.split(/\s+/).length < 2 ? (ok=false,"Informe nome e sobrenome") : "");
+  setErr("telefone", (tel.length<10||tel.length>11) ? (ok=false,"Telefone inválido (com DDD)") : "");
+  setErr("campo", campo.length<2 ? (ok=false,"Informe seu campo") : "");
+  setErr("idade", (!idade||idade<5||idade>99) ? (ok=false,"Idade inválida") : "");
+  return ok;
+}
+
+function go(step){
+  $("#step1").classList.toggle("active", step===1);
+  $("#step2").classList.toggle("active", step===2);
+  $("#bar2").classList.toggle("on", step===2);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("#next").onclick = () => { if(validateStep1()) go(2); };
+$("#back").onclick = () => go(1);
+
+// máscara de telefone
+form.telefone.addEventListener("input", e=>{
+  let v = e.target.value.replace(/\D/g,"").slice(0,11);
+  if(v.length>10) v = v.replace(/(\d{2})(\d{5})(\d{4})/,"($1) $2-$3");
+  else if(v.length>6) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/,"($1) $2-$3");
+  else if(v.length>2) v = v.replace(/(\d{2})(\d{0,5})/,"($1) $2");
+  e.target.value = v;
+});
+
+// campo "Outro"
+form.querySelectorAll('input[name="missao"]').forEach(r=>{
+  r.addEventListener("change",()=>{
+    const isOutro = form.missao.value==="OUTRO";
+    $("#outroBox").classList.toggle("show", isOutro);
+    if(isOutro) $("#outro").focus();
+    setErr("missao","");
+  });
+});
+
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+  if(!validateStep1()){ go(1); return; }
+  const missao = form.missao.value;
+  if(!missao){ setErr("missao","Escolha uma missão"); return; }
+  const outro = form.outro.value.trim();
+  if(missao==="OUTRO" && !outro){ $("#outro").classList.add("invalid"); setErr("missao","Escreva qual missão você quer"); return; }
+  if(form.website.value) return; // anti-bot
+
+  const lead = {
+    nome: form.nome.value.trim(),
+    telefone: form.telefone.value,
+    campo: form.campo.value.trim(),
+    idade: Number(form.idade.value),
+    missao: missao==="OUTRO" ? `OUTRO: ${outro}` : missao,
+    data: new Date().toISOString()
+  };
+
+  const btn = $("#send"); btn.disabled = true; btn.textContent = "Enviando...";
+  try{
+    if(ENDPOINT){
+      await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(lead)});
+    }
+    const saved = JSON.parse(localStorage.getItem("leads")||"[]");
+    saved.push(lead); localStorage.setItem("leads",JSON.stringify(saved));
+    form.hidden = true; $(".steps").hidden = true; $("#done").hidden = false;
+  }catch(err){
+    btn.disabled = false; btn.textContent = "Enviar";
+    setErr("missao","Erro ao enviar. Tente novamente.");
+  }
+});
+</script>
+</body>
+</html>
