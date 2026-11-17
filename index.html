@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Together – Feel the Mission Nordeste</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap');
+  :root{
+    --yellow:#ffca00; --yellow-d:#e8a900; --terra:#c9502b; --terra-d:#a53d1c;
+    --blue:#0287c5; --blue-d:#015f8c; --green:#1f8a3b; --ink:#1a1209; --muted:#6e5a40;
+    --paper:#fffaf0; --error:#c62828; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; display:flex; justify-content:center; padding:20px 14px 0;
+    font-family:'Rubik',system-ui,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,.25) 0, transparent 30%),
+      linear-gradient(180deg,var(--yellow) 0%, var(--yellow) 55%, #e0891a 85%, var(--terra) 100%);
+    background-attachment:fixed;
+  }
+  .wrap{width:100%; max-width:520px; padding-bottom:0}
+  .frame{
+    background:var(--paper); border:6px solid var(--terra); border-radius:10px 14px 8px 16px;
+    box-shadow:6px 8px 0 rgba(26,18,9,.85); overflow:hidden;
+  }
+  .hero{display:block; width:100%; height:auto; border-bottom:6px solid var(--terra)}
+  .content{padding:24px 22px 26px}
+  .steps{display:flex; gap:8px; margin-bottom:20px}
+  .steps span{flex:1; height:8px; border-radius:4px; background:#e6d9bd; transition:.3s}
+  .steps span.on{background:var(--blue)}
+  h1{margin:0 0 4px; font-family:'Anton',Impact,sans-serif; font-weight:400; font-size:1.9rem; letter-spacing:.5px; text-transform:uppercase; line-height:1.1; color:var(--terra)}
+  .sub{margin:0 0 20px; color:var(--muted); font-size:.95rem}
+  .step{display:none} .step.active{display:block}
+  label.field{display:block; margin-bottom:16px; font-family:'Oswald',sans-serif; font-weight:700; font-size:.95rem; text-transform:uppercase; letter-spacing:.8px}
+  input[type=text],input[type=tel],input[type=number]{
+    width:100%; margin-top:6px; padding:13px 14px; font-size:1rem; border:3px solid var(--blue);
+    border-radius:var(--radius) 10px var(--radius) 12px; outline:none; transition:.2s; font-family:'Rubik',sans-serif; background:#fff; color:var(--ink);
+  }
+  input:focus{border-color:var(--terra); box-shadow:3px 3px 0 var(--yellow)}
+  .invalid{border-color:var(--error)!important}
+  .err{color:var(--error); font-family:'Rubik',sans-serif; text-transform:none; letter-spacing:0; font-size:.8rem; font-weight:500; min-height:1em; margin-top:4px; display:block}
+  .missions{display:grid; gap:12px; margin-bottom:12px}
+  .mission{position:relative; --c:var(--blue)}
+  .mission:nth-child(1){--c:var(--blue)}
+  .mission:nth-child(2){--c:var(--green)}
+  .mission:nth-child(3){--c:var(--terra)}
+  .mission:nth-child(4){--c:var(--yellow-d)}
+  .mission:nth-child(5){--c:var(--ink)}
+  .mission input{position:absolute; opacity:0}
+  .mission div{
+    padding:14px 16px; border:4px solid var(--c); border-radius:10px 14px 8px 14px; background:#fff;
+    font-family:'Anton',Impact,sans-serif; font-size:1.25rem; letter-spacing:.8px; text-transform:uppercase;
+    cursor:pointer; transition:.15s; display:flex; align-items:center; gap:12px;
+  }
+  .mission div small{font-family:'Oswald',sans-serif; font-size:.8rem; letter-spacing:1px; color:var(--muted); margin-right:2px}
+  .mission div::before{content:""; width:20px; height:20px; border-radius:50%; border:3px solid var(--c); flex:none; transition:.15s}
+  .mission:hover div{transform:translate(-2px,-2px); box-shadow:3px 3px 0 var(--c)}
+  .mission input:checked + div{background:var(--c); color:#fff; box-shadow:4px 4px 0 var(--ink)}
+  .mission:nth-child(4) input:checked + div{color:var(--ink)}
+  .mission input:checked + div small{color:inherit; opacity:.85}
+  .mission input:checked + div::before{background:#fff; border-color:#fff; box-shadow:inset 0 0 0 4px var(--c)}
+  .mission input:focus-visible + div{outline:3px solid var(--ink); outline-offset:2px}
+  #outroBox{display:none; margin-bottom:12px} #outroBox.show{display:block}
+  .actions{display:flex; gap:10px; margin-top:10px}
+  button{
+    flex:1; padding:14px; font-family:'Anton',Impact,sans-serif; font-size:1.2rem; letter-spacing:1px; text-transform:uppercase;
+    border:3px solid var(--ink); border-radius:10px 14px 10px 14px; cursor:pointer; transition:.12s;
+    box-shadow:4px 4px 0 var(--ink);
+  }
+  button:active{transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink)}
+  .btn-primary{background:var(--terra); color:#fff} .btn-primary:hover{background:var(--terra-d)}
+  .btn-ghost{background:#fff; color:var(--ink); flex:0 0 35%}
+  button:disabled{opacity:.6; cursor:wait}
+  .done{text-align:center; padding:10px 0}
+  .done .ok{font-size:3.2rem}
+  .flags{display:block; width:100%; height:auto; margin-top:20px; border-top:4px solid var(--terra)}
+  .foot{margin:28px -14px 0; padding:14px 0; text-align:center; background:#d04f26; border-top:6px solid var(--ink)}
+  .foot img{height:56px; width:auto; display:block; margin:0 auto}
+  .hp{position:absolute; left:-9999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<main class="frame">
+  <img class="hero" src="assets/header.jpg" alt="Together – Feel the Mission Nordeste" width="1200" height="293">
+  <div class="content">
+  <div class="steps" aria-hidden="true"><span class="on" id="bar1"></span><span id="bar2"></span></div>
+
+  <form id="form" novalidate>
+    <!-- FASE 1 -->
+    <section class="step active" id="step1">
+      <h1>Vamos nos conhecer! 👋</h1>
+      <p class="sub">Conte um pouco sobre você.</p>
+
+      <label class="field">Nome completo
+        <input type="text" id="nome" name="nome" autocomplete="name" placeholder="Seu nome">
+        <span class="err" data-for="nome"></span>
+      </label>
+      <label class="field">Telefone (WhatsApp)
+        <input type="tel" id="telefone" name="telefone" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000">
+        <span class="err" data-for="telefone"></span>
+      </label>
+      <label class="field">Campo
+        <input type="text" id="campo" name="campo" placeholder="Seu campo / associação">
+        <span class="err" data-for="campo"></span>
+      </label>
+      <label class="field">Idade
+        <input type="number" id="idade" name="idade" inputmode="numeric" min="5" max="99" placeholder="Ex: 18">
+        <span class="err" data-for="idade"></span>
+      </label>
+
+      <div class="actions"><button type="button" class="btn-primary" id="next">Continuar →</button></div>
+    </section>
+
+    <!-- FASE 2 -->
+    <section class="step" id="step2">
+      <h1>Qual missão te chama? 🌍</h1>
+      <p class="sub">Escolha a experiência que você gostaria de viver.</p>
+
+      <div class="missions" role="radiogroup">
+        <label class="mission"><input type="radio" name="missao" value="OYIM"><div><small>Missão</small>OYIM</div></label>
+        <label class="mission"><input type="radio" name="missao" value="CALEBE"><div><small>Missão</small>Calebe</div></label>
+        <label class="mission"><input type="radio" name="missao" value="COLPORTAGEM"><div><small>Missão</small>Colportagem</div></label>
+        <label class="mission"><input type="radio" name="missao" value="SVA"><div><small>Missão</small>SVA</div></label>
+        <label class="mission"><input type="radio" name="missao" value="OUTRO"><div>Outro</div></label>
+      </div>
+      <div id="outroBox">
+        <input type="text" id="outro" name="outro" placeholder="Qual missão você gostaria de participar?">
+      </div>
+      <span class="err" data-for="missao"></span>
+
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <div class="actions">
+        <button type="button" class="btn-ghost" id="back">← Voltar</button>
+        <button type="submit" class="btn-primary" id="send">Enviar</button>
+      </div>
+    </section>
+  </form>
+
+  <section class="done" id="done" hidden>
+    <div class="ok">🎉</div>
+    <h1>Recebemos seu cadastro!</h1>
+    <p class="sub">Em breve entraremos em contato com você.</p>
+  </section>
+  </div>
+  <img class="flags" src="assets/flags.jpg" alt="Bandeiras do Nordeste" width="1100" height="125">
+</main>
+<div class="foot"><img src="assets/ja.png" alt="Juventude Adventista"></div>
+</div>
+
+<script>
+/* ===== CONFIGURAÇÃO =====
+   Cole aqui a URL que vai receber os leads (Google Apps Script, Make, Zapier, n8n, etc.).
+   Os dados são enviados por POST em JSON. Se ficar vazio, os leads ficam apenas no
+   navegador (localStorage) – útil só para testes. */
+const ENDPOINT = "";
+
+const $ = s => document.querySelector(s);
+const form = $("#form");
+
+function setErr(name, msg){
+  const el = document.querySelector(`[data-for="${name}"]`);
+  if(el) el.textContent = msg || "";
+  const input = form.elements[name];
+  if(input && input.classList) input.classList.toggle("invalid", !!msg);
+}
+
+function validateStep1(){
+  let ok = true;
+  const nome = form.nome.value.trim();
+  const tel = form.telefone.value.replace(/\D/g,"");
+  const campo = form.campo.value.trim();
+  const idade = parseInt(form.idade.value,10);
+  setErr("nome", nome.split(/\s+/).length < 2 ? (ok=false,"Informe nome e sobrenome") : "");
+  setErr("telefone", (tel.length<10||tel.length>11) ? (ok=false,"Telefone inválido (com DDD)") : "");
+  setErr("campo", campo.length<2 ? (ok=false,"Informe seu campo") : "");
+  setErr("idade", (!idade||idade<5||idade>99) ? (ok=false,"Idade inválida") : "");
+  return ok;
+}
+
+function go(step){
+  $("#step1").classList.toggle("active", step===1);
+  $("#step2").classList.toggle("active", step===2);
+  $("#bar2").classList.toggle("on", step===2);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("#next").onclick = () => { if(validateStep1()) go(2); };
+$("#back").onclick = () => go(1);
+
+// máscara de telefone
+form.telefone.addEventListener("input", e=>{
+  let v = e.target.value.replace(/\D/g,"").slice(0,11);
+  if(v.length>10) v = v.replace(/(\d{2})(\d{5})(\d{4})/,"($1) $2-$3");
+  else if(v.length>6) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/,"($1) $2-$3");
+  else if(v.length>2) v = v.replace(/(\d{2})(\d{0,5})/,"($1) $2");
+  e.target.value = v;
+});
+
+// campo "Outro"
+form.querySelectorAll('input[name="missao"]').forEach(r=>{
+  r.addEventListener("change",()=>{
+    const isOutro = form.missao.value==="OUTRO";
+    $("#outroBox").classList.toggle("show", isOutro);
+    if(isOutro) $("#outro").focus();
+    setErr("missao","");
+  });
+});
+
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+  if(!validateStep1()){ go(1); return; }
+  const missao = form.missao.value;
+  if(!missao){ setErr("missao","Escolha uma missão"); return; }
+  const outro = form.outro.value.trim();
+  if(missao==="OUTRO" && !outro){ $("#outro").classList.add("invalid"); setErr("missao","Escreva qual missão você quer"); return; }
+  if(form.website.value) return; // anti-bot
+
+  const lead = {
+    nome: form.nome.value.trim(),
+    telefone: form.telefone.value,
+    campo: form.campo.value.trim(),
+    idade: Number(form.idade.value),
+    missao: missao==="OUTRO" ? `OUTRO: ${outro}` : missao,
+    data: new Date().toISOString()
+  };
+
+  const btn = $("#send"); btn.disabled = true; btn.textContent = "Enviando...";
+  try{
+    if(ENDPOINT){
+      await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(lead)});
+    }
+    const saved = JSON.parse(localStorage.getItem("leads")||"[]");
+    saved.push(lead); localStorage.setItem("leads",JSON.stringify(saved));
+    form.hidden = true; $(".steps").hidden = true; $("#done").hidden = false;
+  }catch(err){
+    btn.disabled = false; btn.textContent = "Enviar";
+    setErr("missao","Erro ao enviar. Tente novamente.");
+  }
+});
+</script>
+</body>
+</html>
