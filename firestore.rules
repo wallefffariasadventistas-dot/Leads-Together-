@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Qualquer pessoa pode ENVIAR um lead, mas ninguém consegue ler, alterar ou apagar pelo site.
+    // Qualquer pessoa pode ENVIAR um lead, mas só o administrador logado consegue ler; ninguém altera ou apaga pelo site.
     match /leads/{id} {
       allow create: if request.resource.data.keys().hasOnly(['nome','telefone','campo','idade','missao','data','criadoEm'])
                     && request.resource.data.nome is string && request.resource.data.nome.size() <= 120
@@ -9,7 +9,9 @@ service cloud.firestore {
                     && request.resource.data.campo is string && request.resource.data.campo.size() <= 120
                     && request.resource.data.idade is number && request.resource.data.idade >= 5 && request.resource.data.idade <= 99
                     && request.resource.data.missao is string && request.resource.data.missao.size() <= 160;
-      allow read, update, delete: if false;
+      // Somente o administrador (login em admin.html) pode ler a lista.
+      allow read: if request.auth != null && request.auth.token.email == 'admin@leadstogether.com';
+      allow update, delete: if false;
     }
   }
 }

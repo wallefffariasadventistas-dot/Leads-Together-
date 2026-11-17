@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Together – Área Administrativa</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&family=Rubik:wght@400;500;700&display=swap');
+  :root{
+    --yellow:#ffca00; --terra:#c9502b; --terra-d:#a53d1c; --blue:#0287c5; --green:#1f8a3b;
+    --ink:#1a1209; --muted:#6e5a40; --paper:#fffaf0; --error:#c62828;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; font-family:'Rubik',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(180deg,var(--yellow) 0%,var(--yellow) 50%,#e0891a 85%,var(--terra) 100%); background-attachment:fixed; padding:20px 14px 40px}
+  .wrap{max-width:1000px; margin:0 auto}
+  .frame{background:var(--paper); border:6px solid var(--terra); border-radius:10px 14px 8px 16px; box-shadow:6px 8px 0 rgba(26,18,9,.85); overflow:hidden}
+  .hero{display:block; width:100%; height:auto; border-bottom:6px solid var(--terra)}
+  .content{padding:24px 22px 26px}
+  h1{margin:0 0 4px; font-family:'Anton',Impact,sans-serif; font-weight:400; font-size:1.9rem; text-transform:uppercase; color:var(--terra); letter-spacing:.5px}
+  .sub{margin:0 0 18px; color:var(--muted)}
+  input,select{width:100%; padding:12px 14px; font-size:1rem; font-family:inherit; border:3px solid var(--blue); border-radius:14px 10px 14px 12px; background:#fff; color:var(--ink); outline:none}
+  input:focus,select:focus{border-color:var(--terra); box-shadow:3px 3px 0 var(--yellow)}
+  button{padding:12px 18px; font-family:'Anton',Impact,sans-serif; font-size:1.05rem; letter-spacing:1px; text-transform:uppercase; border:3px solid var(--ink); border-radius:10px 14px 10px 14px; cursor:pointer; box-shadow:4px 4px 0 var(--ink); transition:.12s; background:#fff; color:var(--ink)}
+  button:active{transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink)}
+  button.primary{background:var(--terra); color:#fff}
+  button:disabled{opacity:.6; cursor:wait}
+  .err{color:var(--error); font-weight:500; min-height:1.3em; margin:10px 0 0}
+  #login{max-width:360px}
+  #login input{text-align:center; font-size:1.6rem; letter-spacing:.6em; padding-left:.9em}
+  #login button{width:100%; margin-top:14px}
+  .bar{display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-bottom:16px}
+  .bar .actions{display:flex; gap:10px; flex-wrap:wrap}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:16px}
+  .stat{border:3px solid var(--c,var(--ink)); border-radius:10px 14px 8px 14px; background:#fff; padding:10px 12px; cursor:pointer; text-align:left; box-shadow:none; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.8px; font-size:.8rem; color:var(--muted)}
+  .stat b{display:block; font-family:'Anton',Impact,sans-serif; font-weight:400; font-size:1.8rem; color:var(--ink); letter-spacing:0}
+  .stat.on{background:var(--c,var(--ink)); color:#fff} .stat.on b{color:#fff}
+  .filters{display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px}
+  .tablewrap{overflow-x:auto; border:3px solid var(--ink); border-radius:10px; background:#fff}
+  table{width:100%; border-collapse:collapse; min-width:680px; font-size:.92rem}
+  th{background:var(--ink); color:#fff; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.8px; font-weight:500; padding:10px 12px; text-align:left; white-space:nowrap}
+  td{padding:10px 12px; border-top:1px solid #eadfc8; vertical-align:top}
+  tr:nth-child(even) td{background:#fffaf0}
+  td a{color:var(--blue); font-weight:500}
+  .pill{display:inline-block; padding:2px 10px; border-radius:20px; font-weight:700; font-size:.8rem; color:#fff; background:var(--c,var(--ink))}
+  .empty{padding:30px; text-align:center; color:var(--muted)}
+  [hidden]{display:none!important}
+  @media(max-width:560px){.filters{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <main class="frame">
+  <img class="hero" src="assets/header.jpg" alt="Together – Feel the Mission Nordeste" width="1200" height="293">
+  <div class="content">
+
+   <!-- LOGIN -->
+   <section id="login">
+     <h1>Área administrativa</h1>
+     <p class="sub">Digite a senha de 6 dígitos para ver os inscritos.</p>
+     <form id="loginForm">
+       <input id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" placeholder="••••••" aria-label="Senha de 6 dígitos">
+       <button class="primary" id="loginBtn" type="submit">Entrar</button>
+       <p class="err" id="loginErr" role="alert"></p>
+     </form>
+   </section>
+
+   <!-- PAINEL -->
+   <section id="panel" hidden>
+     <div class="bar">
+       <div><h1>Inscritos</h1><p class="sub" id="total" style="margin:0">Carregando…</p></div>
+       <div class="actions">
+         <button id="csv" type="button">Baixar CSV</button>
+         <button id="logout" type="button">Sair</button>
+       </div>
+     </div>
+     <div class="stats" id="stats"></div>
+     <div class="filters">
+       <input id="q" type="search" placeholder="Buscar por nome, telefone ou campo" aria-label="Buscar">
+       <select id="fMissao" aria-label="Filtrar por missão"><option value="">Todas as missões</option></select>
+     </div>
+     <div class="tablewrap">
+       <table>
+         <thead><tr><th>Data</th><th>Nome</th><th>Telefone</th><th>Campo</th><th>Idade</th><th>Missão</th></tr></thead>
+         <tbody id="rows"></tbody>
+       </table>
+       <div class="empty" id="empty" hidden>Nenhum inscrito encontrado.</div>
+     </div>
+     <p class="err" id="panelErr" role="alert"></p>
+   </section>
+
+  </div>
+ </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcwMCdmMM17rqie9O0KXYioK_MG02i1Dk",
+    authDomain: "leadstogether-a0d0a.firebaseapp.com",
+    projectId: "leadstogether-a0d0a",
+    storageBucket: "leadstogether-a0d0a.firebasestorage.app",
+    messagingSenderId: "365712650025",
+    appId: "1:365712650025:web:7513a02c8c8cd840cc1138",
+    measurementId: "G-ZF414P0C0F"
+  };
+  // E-mail interno do administrador (não precisa ser um e-mail real). Deve ser o mesmo
+  // cadastrado em Firebase > Authentication > Users e usado em firestore.rules.
+  const ADMIN_EMAIL = "admin@leadstogether.com";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const $ = s => document.querySelector(s);
+  const COLORS = {OYIM:"#0287c5", CALEBE:"#1f8a3b", COLPORTAGEM:"#c9502b", SVA:"#e8a900", OUTRO:"#1a1209"};
+
+  let leads = [], unsub = null, missaoSel = "";
+
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const key = m => (m||"").split(":")[0].trim().toUpperCase();
+  const fmt = d => d ? d.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "";
+  const toDate = l => l.criadoEm?.toDate?.() ?? (l.data ? new Date(l.data) : null);
+
+  function render(){
+    const q = $("#q").value.trim().toLowerCase();
+    const list = leads.filter(l =>
+      (!missaoSel || key(l.missao)===missaoSel) &&
+      (!q || [l.nome,l.telefone,l.campo,l.missao].join(" ").toLowerCase().includes(q)));
+    $("#rows").innerHTML = list.map(l => {
+      const k = key(l.missao), tel = String(l.telefone||"").replace(/\D/g,"");
+      return `<tr><td>${esc(fmt(toDate(l)))}</td><td>${esc(l.nome)}</td>
+        <td><a href="https://wa.me/55${tel}" target="_blank" rel="noopener">${esc(l.telefone)}</a></td>
+        <td>${esc(l.campo)}</td><td>${esc(l.idade)}</td>
+        <td><span class="pill" style="--c:${COLORS[k]||"#1a1209"}">${esc(l.missao)}</span></td></tr>`;
+    }).join("");
+    $("#empty").hidden = list.length>0;
+    $("#total").textContent = `${leads.length} inscrito${leads.length===1?"":"s"}` + (list.length!==leads.length ? ` · mostrando ${list.length}` : "");
+  }
+
+  function renderStats(){
+    const counts = {};
+    leads.forEach(l => { const k = key(l.missao); counts[k]=(counts[k]||0)+1; });
+    const keys = ["OYIM","CALEBE","COLPORTAGEM","SVA","OUTRO"];
+    $("#stats").innerHTML = keys.map(k =>
+      `<button type="button" class="stat ${missaoSel===k?"on":""}" data-k="${k}" style="--c:${COLORS[k]}">${k}<b>${counts[k]||0}</b></button>`).join("");
+    $("#fMissao").innerHTML = '<option value="">Todas as missões</option>' + keys.map(k=>`<option value="${k}" ${missaoSel===k?"selected":""}>${k}</option>`).join("");
+  }
+
+  $("#stats").addEventListener("click", e => {
+    const b = e.target.closest(".stat"); if(!b) return;
+    missaoSel = missaoSel===b.dataset.k ? "" : b.dataset.k; renderStats(); render();
+  });
+  $("#fMissao").addEventListener("change", e => { missaoSel = e.target.value; renderStats(); render(); });
+  $("#q").addEventListener("input", render);
+
+  $("#csv").addEventListener("click", () => {
+    const head = ["Data","Nome","Telefone","Campo","Idade","Missão"];
+    const q = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
+    const rows = leads.map(l => [fmt(toDate(l)),l.nome,l.telefone,l.campo,l.idade,l.missao].map(q).join(","));
+    const blob = new Blob(["﻿"+[head.map(q).join(","),...rows].join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = "inscritos-together.csv"; a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  function startListening(){
+    unsub?.();
+    unsub = onSnapshot(query(collection(db,"leads"), orderBy("criadoEm","desc")),
+      snap => { leads = snap.docs.map(d => d.data()); $("#panelErr").textContent=""; renderStats(); render(); },
+      err => { $("#panelErr").textContent = "Não foi possível carregar os inscritos. Verifique as regras do Firestore."; console.error(err); });
+  }
+
+  onAuthStateChanged(auth, user => {
+    const ok = user && user.email === ADMIN_EMAIL;
+    $("#login").hidden = !!ok; $("#panel").hidden = !ok;
+    if(ok) startListening(); else { unsub?.(); unsub=null; leads=[]; }
+  });
+
+  $("#loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const pin = $("#pin").value.trim(), err = $("#loginErr"); err.textContent = "";
+    if(!/^\d{6}$/.test(pin)){ err.textContent = "A senha tem 6 números."; return; }
+    const btn = $("#loginBtn"); btn.disabled = true; btn.textContent = "Entrando...";
+    try{ await signInWithEmailAndPassword(auth, ADMIN_EMAIL, pin); $("#pin").value=""; }
+    catch(ex){
+      err.textContent = ex.code==="auth/too-many-requests" ? "Muitas tentativas. Aguarde alguns minutos." : "Senha incorreta.";
+    }
+    btn.disabled = false; btn.textContent = "Entrar";
+  });
+  $("#logout").addEventListener("click", () => signOut(auth));
+</script>
+</body>
+</html>
