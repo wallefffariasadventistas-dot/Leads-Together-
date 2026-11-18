@@ -123,7 +123,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
   const $ = s => document.querySelector(s);
-  const COLORS = {OYIM:"#0287c5", CALEBE:"#1f8a3b", COLPORTAGEM:"#c9502b", SVA:"#e8a900", OUTRO:"#1a1209"};
+  const COLORS = {OYIM:"#0287c5", CALEBE:"#1f8a3b", COLPORTAGEM:"#c9502b", SVA:"#e8a900", "MINISTÉRIO PASTORAL":"#7a3e9d", OUTRO:"#1a1209"};
 
   let leads = [], unsub = null, missaoSel = "";
 
@@ -155,7 +155,7 @@
   function renderStats(){
     const counts = {};
     leads.forEach(l => { const k = key(l.missao); counts[k]=(counts[k]||0)+1; });
-    const keys = ["OYIM","CALEBE","COLPORTAGEM","SVA","OUTRO"];
+    const keys = ["OYIM","CALEBE","COLPORTAGEM","SVA","MINISTÉRIO PASTORAL","OUTRO"];
     $("#stats").innerHTML = keys.map(k =>
       `<button type="button" class="stat ${missaoSel===k?"on":""}" data-k="${k}" style="--c:${COLORS[k]}">${k}<b>${counts[k]||0}</b></button>`).join("");
     $("#fMissao").innerHTML = '<option value="">Todas as missões</option>' + keys.map(k=>`<option value="${k}" ${missaoSel===k?"selected":""}>${k}</option>`).join("");
