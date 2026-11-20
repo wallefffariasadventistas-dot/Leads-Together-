@@ -37,7 +37,7 @@
   .stat{border:3px solid var(--c,var(--ink)); border-radius:10px 14px 8px 14px; background:#fff; padding:10px 12px; cursor:pointer; text-align:left; box-shadow:none; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.8px; font-size:.8rem; color:var(--muted)}
   .stat b{display:block; font-family:'Anton',Impact,sans-serif; font-weight:400; font-size:1.8rem; color:var(--ink); letter-spacing:0}
   .stat.on{background:var(--c,var(--ink)); color:#fff} .stat.on b{color:#fff}
-  .filters{display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px}
+  .filters{display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; margin-bottom:14px}
   .tablewrap{overflow-x:auto; border:3px solid var(--ink); border-radius:10px; background:#fff}
   table{width:100%; border-collapse:collapse; min-width:680px; font-size:.92rem}
   th{background:var(--ink); color:#fff; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.8px; font-weight:500; padding:10px 12px; text-align:left; white-space:nowrap}
@@ -47,7 +47,7 @@
   .pill{display:inline-block; padding:2px 10px; border-radius:20px; font-weight:700; font-size:.8rem; color:#fff; background:var(--c,var(--ink))}
   .empty{padding:30px; text-align:center; color:var(--muted)}
   [hidden]{display:none!important}
-  @media(max-width:560px){.filters{grid-template-columns:1fr}}
+  @media(max-width:700px){.filters{grid-template-columns:1fr}}
 </style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -85,6 +85,7 @@
      <div class="filters">
        <input id="q" type="search" placeholder="Buscar por nome, telefone ou campo" aria-label="Buscar">
        <select id="fMissao" aria-label="Filtrar por missão"><option value="">Todas as missões</option></select>
+       <select id="fCampo" aria-label="Filtrar por campo"><option value="">Todos os campos</option></select>
      </div>
      <div class="tablewrap">
        <table>
@@ -93,7 +94,7 @@
        </table>
        <div class="empty" id="empty" hidden>Nenhum inscrito encontrado.</div>
      </div>
-     <p class="sub" style="margin:10px 0 0;font-size:.85rem">Os downloads (Excel, PDF e CSV) respeitam a busca e o filtro de missão aplicados na tela.</p>
+     <p class="sub" style="margin:10px 0 0;font-size:.85rem">Os downloads (Excel, PDF e CSV) respeitam a busca e os filtros de missão e campo aplicados na tela.</p>
      <p class="err" id="panelErr" role="alert"></p>
    </section>
 
@@ -125,10 +126,13 @@
   const $ = s => document.querySelector(s);
   const COLORS = {OYIM:"#0287c5", CALEBE:"#1f8a3b", COLPORTAGEM:"#c9502b", SVA:"#e8a900", "MINISTÉRIO PASTORAL":"#7a3e9d", OUTRO:"#1a1209"};
 
-  let leads = [], unsub = null, missaoSel = "";
+  let leads = [], unsub = null, missaoSel = "", campoSel = "";
+  const CAMPOS = ["ACe","APec","ALP","MPi","MRP","MisAL","OUTRO"];
 
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const key = m => (m||"").split(":")[0].trim().toUpperCase();
+  // Campo: valores fora da lista (cadastros antigos ou "Outro: texto") entram em OUTRO
+  const campoKey = c => { const v = (c||"").split(":")[0].trim(); return CAMPOS.find(x => x.toLowerCase()===v.toLowerCase()) || "OUTRO"; };
   const fmt = d => d ? d.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "";
   const toDate = l => l.criadoEm?.toDate?.() ?? (l.data ? new Date(l.data) : null);
 
@@ -136,6 +140,7 @@
     const q = $("#q").value.trim().toLowerCase();
     return leads.filter(l =>
       (!missaoSel || key(l.missao)===missaoSel) &&
+      (!campoSel || campoKey(l.campo)===campoSel) &&
       (!q || [l.nome,l.telefone,l.campo,l.missao].join(" ").toLowerCase().includes(q)));
   }
 
@@ -158,6 +163,8 @@
     const keys = ["OYIM","CALEBE","COLPORTAGEM","SVA","MINISTÉRIO PASTORAL","OUTRO"];
     $("#stats").innerHTML = keys.map(k =>
       `<button type="button" class="stat ${missaoSel===k?"on":""}" data-k="${k}" style="--c:${COLORS[k]}">${k}<b>${counts[k]||0}</b></button>`).join("");
+    const cc = {}; leads.forEach(l => { const k = campoKey(l.campo); cc[k]=(cc[k]||0)+1; });
+    $("#fCampo").innerHTML = '<option value="">Todos os campos</option>' + CAMPOS.map(k=>`<option value="${k}" ${campoSel===k?"selected":""}>${k==="OUTRO"?"Outro":k} (${cc[k]||0})</option>`).join("");
     $("#fMissao").innerHTML = '<option value="">Todas as missões</option>' + keys.map(k=>`<option value="${k}" ${missaoSel===k?"selected":""}>${k}</option>`).join("");
   }
 
@@ -166,6 +173,7 @@
     missaoSel = missaoSel===b.dataset.k ? "" : b.dataset.k; renderStats(); render();
   });
   $("#fMissao").addEventListener("change", e => { missaoSel = e.target.value; renderStats(); render(); });
+  $("#fCampo").addEventListener("change", e => { campoSel = e.target.value; renderStats(); render(); });
   $("#q").addEventListener("input", render);
 
   const HEAD = ["Data","Nome","Telefone","Campo","Idade","Missão"];
@@ -200,7 +208,7 @@
     doc.setFont("helvetica","bold"); doc.setFontSize(16);
     doc.text("Together – Feel the Mission Nordeste", 40, 40);
     doc.setFont("helvetica","normal"); doc.setFontSize(10);
-    const filtro = [missaoSel && `Missão: ${missaoSel}`, $("#q").value.trim() && `Busca: ${$("#q").value.trim()}`].filter(Boolean).join(" · ");
+    const filtro = [missaoSel && `Missão: ${missaoSel}`, campoSel && `Campo: ${campoSel}`, $("#q").value.trim() && `Busca: ${$("#q").value.trim()}`].filter(Boolean).join(" · ");
     doc.text(`Lista de inscritos · ${list.length} registro${list.length===1?"":"s"} · gerado em ${new Date().toLocaleString("pt-BR")}${filtro? " · "+filtro : ""}`, 40, 58);
     doc.autoTable({
       head:[HEAD], body: toRows(list), startY: 72,
