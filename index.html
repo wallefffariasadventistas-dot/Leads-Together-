@@ -71,6 +71,9 @@
     cursor:pointer; transition:.15s; display:flex; align-items:center; gap:12px;
   }
   .mission div small{font-family:'Oswald',sans-serif; font-size:.8rem; letter-spacing:1px; color:var(--muted); margin-right:2px}
+  .mission .txt{display:flex; flex-direction:column; line-height:1.15}
+  .mission .desc{font-family:'Rubik',sans-serif; font-size:.82rem; font-weight:500; letter-spacing:0; text-transform:none; color:var(--muted); margin-top:2px}
+  .mission input:checked + div .desc{color:inherit; opacity:.9}
   .mission div::before{content:""; width:20px; height:20px; border-radius:50%; border:3px solid var(--c); flex:none; transition:.15s}
   .mission:hover div{transform:translate(-2px,-2px); box-shadow:3px 3px 0 var(--c)}
   .mission input:checked + div{background:var(--c); color:#fff; box-shadow:4px 4px 0 var(--ink)}
@@ -147,7 +150,7 @@
       <p class="sub">Escolha a experiência que você gostaria de viver.</p>
 
       <div class="missions" role="radiogroup">
-        <label class="mission"><input type="radio" name="missao" value="OYIM"><div><small>Missão</small>OYIM</div></label>
+        <label class="mission"><input type="radio" name="missao" value="OYIM"><div><small>Missão</small><span class="txt">OYIM<span class="desc">Um Ano em Missão</span></span></div></label>
         <label class="mission"><input type="radio" name="missao" value="CALEBE"><div><small>Missão</small>Calebe</div></label>
         <label class="mission"><input type="radio" name="missao" value="COLPORTAGEM"><div><small>Missão</small>Colportagem</div></label>
         <label class="mission"><input type="radio" name="missao" value="SVA"><div><small>Missão</small>SVA</div></label>
